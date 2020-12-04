@@ -226,7 +226,12 @@ class Tribute {
                 if licenceFile.lastPathComponent == "Package.swift",
                    !manager.fileExists(atPath: licenceFile.deletingPathExtension()
                                         .appendingPathExtension("resolved").path) {
-                    throw TributeError("Found unresolved Package.swift at \(licensePath).")
+                    guard let string = try? String(contentsOf: licenceFile) else {
+                        throw TributeError("Unable to read Package.swift at \(licensePath).")
+                    }
+                    if string.range(of: ".package(") != nil {
+                        throw TributeError("Found unresolved Package.swift at \(licensePath). Run 'swift package resolve' to resolve dependencies.")
+                    }
                 }
             }
             let name = licenceFile.deletingLastPathComponent().lastPathComponent
