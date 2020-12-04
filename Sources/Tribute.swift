@@ -200,7 +200,8 @@ class Tribute {
         return namedArgs
     }
 
-    func fetchLibraries(in directory: URL, excluding: [Glob]) throws -> [Library] {
+    func fetchLibraries(in directory: URL, excluding: [Glob],
+                        includingPackages: Bool = true) throws -> [Library] {
         let manager = FileManager.default
         guard let enumerator = manager.enumerator(
             at: directory,
@@ -215,6 +216,18 @@ class Tribute {
         for case let licenceFile as URL in enumerator {
             if excluding.contains(where: { $0.matches(licenceFile.path) }) {
                 continue
+            }
+            let licensePath = String(licenceFile.standardized.path .dropFirst(directory.standardized.path.count))
+            if includingPackages {
+                if licenceFile.lastPathComponent == "Package.resolved" {
+                    libraries += try fetchLibraries(forResolvedPackageAt: licenceFile)
+                    continue
+                }
+                if licenceFile.lastPathComponent == "Package.swift",
+                   !manager.fileExists(atPath: licenceFile.deletingPathExtension()
+                                        .appendingPathExtension("resolved").path) {
+                    throw TributeError("Found unresolved Package.swift at \(licensePath).")
+                }
             }
             let name = licenceFile.deletingLastPathComponent().lastPathComponent
             if libraries.contains(where: { $0.name.lowercased() == name.lowercased() }) {
@@ -231,8 +244,6 @@ class Tribute {
             if isDirectory.boolValue {
                 continue
             }
-            let licensePath = String(licenceFile.standardized.path
-                                        .dropFirst(directory.standardized.path.count))
             do {
                 let licenseText = try String(contentsOf: licenceFile)
                     .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -249,6 +260,38 @@ class Tribute {
         }
 
         return libraries.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    }
+
+    func fetchLibraries(forResolvedPackageAt url: URL) throws -> [Library] {
+        struct Pin: Decodable {
+            let package: String
+            let repositoryURL: URL
+        }
+        struct Object: Decodable {
+            let pins: [Pin]
+        }
+        struct Resolved: Decodable {
+            let object: Object
+        }
+        let filter: Set<String>
+        do {
+            let data = try Data(contentsOf: url)
+            let resolved = try JSONDecoder().decode(Resolved.self, from: data)
+            filter = Set(resolved.object.pins.flatMap {
+                [$0.package.lowercased(),
+                 $0.repositoryURL.deletingPathExtension().lastPathComponent.lowercased()]
+            })
+        } catch {
+            throw TributeError("Unable to read Swift Package file at \(url.path).")
+        }
+        guard let derivedDataDirectory = FileManager.default
+                .urls(for: .libraryDirectory, in: .userDomainMask).first?
+                .appendingPathComponent("Developer/Xcode/DerivedData") else {
+            throw TributeError("Unable to locate ~/Library/Developer/Xcode/DerivedData directory.")
+        }
+        let libraries = try fetchLibraries(in: derivedDataDirectory, excluding: [],
+                                           includingPackages: false)
+        return libraries.filter { filter.contains($0.name.lowercased()) }
     }
 
     func getHelp(with arg: String?) throws -> String {
