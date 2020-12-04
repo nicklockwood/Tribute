@@ -543,7 +543,7 @@ class Tribute {
         case .check:
             return try check(in: directory, with: args)
         case .version:
-            return "0.1.0"
+            return "0.2.0"
         }
     }
 }

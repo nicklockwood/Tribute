@@ -76,3 +76,13 @@ $ tribute check path/to/acknowledgements-file.json
 ```
 
 This command won't change any files, but will produce an error if any non-excluded libraries are missing from the licenses file.
+
+
+Known issues
+-------------
+
+* Dependency scanning is quite slow for large projects, especially for projects that include Swift Package Manager dependencies. This will be improved in future.
+
+* Dependency scanning only works if the dependencies have been checked out. If you are using git submodules, or a package manager such as CocoaPods, Carthage or Swift Package Manager, make sure your dependencies have all been resolved before running Tribute (if you are able to successfuly build your app you can assume that the dependencies have been resolved).
+
+* Tribute can only detect dependencies that include a LICENSE file (with or without file extensions). If you have copied a dependency without the LICENSE file, or if the dependency doesn't include such a file, it won't be detected. If you encounter such cases please open an issue and I'll try to find a solution.
