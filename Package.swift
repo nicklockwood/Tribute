@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "Tribute",
+    platforms: [.macOS(.v10_13)],
     products: [
         .executable(name: "tribute", targets: ["Tribute"]),
     ],
