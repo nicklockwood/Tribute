@@ -14,7 +14,7 @@ class TemplateTests: XCTestCase {
         let template = Template(rawValue: "foo$namebaz")
         let library = Library(
             name: "bar",
-            licenceFile: URL(fileURLWithPath: ""),
+            licensePath: "",
             licenseType: .mit,
             licenseText: ""
         )
@@ -25,7 +25,7 @@ class TemplateTests: XCTestCase {
         let template = Template(rawValue: "foo$typebaz")
         let library = Library(
             name: "bar",
-            licenceFile: URL(fileURLWithPath: ""),
+            licensePath: "",
             licenseType: .mit,
             licenseText: ""
         )
@@ -36,7 +36,7 @@ class TemplateTests: XCTestCase {
         let template = Template(rawValue: "foo$textbaz")
         let library = Library(
             name: "quux",
-            licenceFile: URL(fileURLWithPath: ""),
+            licensePath: "",
             licenseType: .mit,
             licenseText: "bar"
         )
@@ -53,7 +53,7 @@ class TemplateTests: XCTestCase {
         """)
         let library = Library(
             name: "quux",
-            licenceFile: URL(fileURLWithPath: ""),
+            licensePath: "",
             licenseType: .mit,
             licenseText: "bar"
         )
@@ -71,7 +71,7 @@ class TemplateTests: XCTestCase {
         """)
         let library = Library(
             name: "quux",
-            licenceFile: URL(fileURLWithPath: ""),
+            licensePath: "",
             licenseType: .mit,
             licenseText: "bar"
         )
@@ -90,7 +90,7 @@ class TemplateTests: XCTestCase {
         """)
         let library = Library(
             name: "quux",
-            licenceFile: URL(fileURLWithPath: ""),
+            licensePath: "",
             licenseType: .mit,
             licenseText: "bar"
         )
@@ -113,7 +113,7 @@ class TemplateTests: XCTestCase {
         """)
         let library = Library(
             name: "Foobar 3.0",
-            licenceFile: URL(fileURLWithPath: ""),
+            licensePath: "",
             licenseType: .mit,
             licenseText: """
             line 1
@@ -134,7 +134,7 @@ class TemplateTests: XCTestCase {
         """)
         let library = Library(
             name: "Foobar 3.0",
-            licenceFile: URL(fileURLWithPath: ""),
+            licensePath: "",
             licenseType: .mit,
             licenseText: ""
         )
@@ -152,7 +152,7 @@ class TemplateTests: XCTestCase {
         """)
         let library = Library(
             name: "foo & bar - \"the best!\"",
-            licenceFile: URL(fileURLWithPath: ""),
+            licensePath: "",
             licenseType: .mit,
             licenseText: """
             line 1
