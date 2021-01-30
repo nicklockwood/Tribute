@@ -201,7 +201,8 @@ class Tribute {
     }
 
     func fetchLibraries(in directory: URL, excluding: [Glob],
-                        includingPackages: Bool = true) throws -> [Library] {
+                        includingPackages: Bool = true) throws -> [Library]
+    {
         let manager = FileManager.default
         guard let enumerator = manager.enumerator(
             at: directory,
@@ -217,20 +218,25 @@ class Tribute {
             if excluding.contains(where: { $0.matches(licenceFile.path) }) {
                 continue
             }
-            let licensePath = String(licenceFile.standardized.path .dropFirst(directory.standardized.path.count))
+            let licensePath = String(licenceFile.standardized.path.dropFirst(directory.standardized.path.count))
             if includingPackages {
                 if licenceFile.lastPathComponent == "Package.resolved" {
                     libraries += try fetchLibraries(forResolvedPackageAt: licenceFile)
                     continue
                 }
                 if licenceFile.lastPathComponent == "Package.swift",
-                   !manager.fileExists(atPath: licenceFile.deletingPathExtension()
-                                        .appendingPathExtension("resolved").path) {
+                   !manager.fileExists(
+                       atPath: licenceFile.deletingPathExtension()
+                           .appendingPathExtension("resolved").path
+                   )
+                {
                     guard let string = try? String(contentsOf: licenceFile) else {
                         throw TributeError("Unable to read Package.swift at \(licensePath).")
                     }
                     if string.range(of: ".package(") != nil {
-                        throw TributeError("Found unresolved Package.swift at \(licensePath). Run 'swift package resolve' to resolve dependencies.")
+                        throw TributeError(
+                            "Found unresolved Package.swift at \(licensePath). Run 'swift package resolve' to resolve dependencies."
+                        )
                     }
                 }
             }
@@ -241,7 +247,8 @@ class Tribute {
             let ext = licenceFile.pathExtension
             let fileName = licenceFile.deletingPathExtension().lastPathComponent.lowercased()
             guard ["license", "licence"].contains(fileName),
-                  ["", "text", "txt", "md"].contains(ext) else {
+                  ["", "text", "txt", "md"].contains(ext)
+            else {
                 continue
             }
             var isDirectory: ObjCBool = false
@@ -283,19 +290,25 @@ class Tribute {
             let data = try Data(contentsOf: url)
             let resolved = try JSONDecoder().decode(Resolved.self, from: data)
             filter = Set(resolved.object.pins.flatMap {
-                [$0.package.lowercased(),
-                 $0.repositoryURL.deletingPathExtension().lastPathComponent.lowercased()]
+                [
+                    $0.package.lowercased(),
+                    $0.repositoryURL.deletingPathExtension().lastPathComponent.lowercased(),
+                ]
             })
         } catch {
             throw TributeError("Unable to read Swift Package file at \(url.path).")
         }
         guard let derivedDataDirectory = FileManager.default
-                .urls(for: .libraryDirectory, in: .userDomainMask).first?
-                .appendingPathComponent("Developer/Xcode/DerivedData") else {
+            .urls(for: .libraryDirectory, in: .userDomainMask).first?
+            .appendingPathComponent("Developer/Xcode/DerivedData")
+        else {
             throw TributeError("Unable to locate ~/Library/Developer/Xcode/DerivedData directory.")
         }
-        let libraries = try fetchLibraries(in: derivedDataDirectory, excluding: [],
-                                           includingPackages: false)
+        let libraries = try fetchLibraries(
+            in: derivedDataDirectory,
+            excluding: [],
+            includingPackages: false
+        )
         return libraries.filter { filter.contains($0.name.lowercased()) }
     }
 
