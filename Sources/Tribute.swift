@@ -93,9 +93,9 @@ enum LicenseType: String, CaseIterable {
     }
 
     private func matches(preprocessedText: String) -> Bool {
-        matchStrings.contains(where: {
-            preprocessedText.range(of: $0.lowercased()) != nil
-        })
+        matchStrings.contains {
+            preprocessedText.range(of: $0, options: .caseInsensitive) != nil
+        }
     }
 
     private static func preprocess(_ licenseText: String) -> String {
@@ -203,13 +203,16 @@ class Tribute {
     func fetchLibraries(in directory: URL, excluding: [Glob],
                         includingPackages: Bool = true) throws -> [Library]
     {
+        let standardizedDirectory = directory.standardized
+        let directoryPath = standardizedDirectory.path
+
         let manager = FileManager.default
         guard let enumerator = manager.enumerator(
-            at: directory,
+            at: standardizedDirectory,
             includingPropertiesForKeys: nil,
             options: .skipsHiddenFiles
         ) else {
-            throw TributeError("Unable to process directory at \(directory.path).")
+            throw TributeError("Unable to process directory at \(directoryPath).")
         }
 
         // Fetch libraries
@@ -218,7 +221,7 @@ class Tribute {
             if excluding.contains(where: { $0.matches(licenceFile.path) }) {
                 continue
             }
-            let licensePath = String(licenceFile.standardized.path.dropFirst(directory.standardized.path.count))
+            let licensePath = licenceFile.path.dropFirst(directoryPath.count)
             if includingPackages {
                 if licenceFile.lastPathComponent == "Package.resolved" {
                     libraries += try fetchLibraries(forResolvedPackageAt: licenceFile)
@@ -241,7 +244,7 @@ class Tribute {
                 }
             }
             let name = licenceFile.deletingLastPathComponent().lastPathComponent
-            if libraries.contains(where: { $0.name.lowercased() == name.lowercased() }) {
+            if libraries.contains(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame }) {
                 continue
             }
             let ext = licenceFile.pathExtension
@@ -261,7 +264,7 @@ class Tribute {
                     .trimmingCharacters(in: .whitespacesAndNewlines)
                 let library = Library(
                     name: name,
-                    licensePath: licensePath,
+                    licensePath: String(licensePath),
                     licenseType: LicenseType(licenseText: licenseText),
                     licenseText: licenseText
                 )
