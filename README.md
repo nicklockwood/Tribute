@@ -57,7 +57,7 @@ Tribute offers a variety of options for configuring the format and structure of 
 $ tribute help export
 ```
 
-Once you have generated a licenses file and integreated it into your app or website, you might want to configure a script to update it every time you build. To set this up in Xcode, do the following:
+Once you have generated a licenses file and integrated it into your app or website, you might want to configure a script to update it every time you build. To set this up in Xcode, do the following:
 
 1. Click on your project in the file list, choose your target under `TARGETS`, click the `Build Phases` tab
 2. Add a `New Run Script Phase` by clicking the little plus icon in the top left and paste in the following script:
@@ -84,6 +84,6 @@ Known issues
 
 * Dependency scanning is quite slow for large projects, especially for projects that include Swift Package Manager dependencies. This will be improved in future.
 
-* Dependency scanning only works if the dependencies have been checked out. If you are using git submodules, or a package manager such as CocoaPods, Carthage or Swift Package Manager, make sure your dependencies have all been resolved before running Tribute (if you are able to successfuly build your app you can assume that the dependencies have been resolved).
+* Dependency scanning only works if the dependencies have been checked out. If you are using git submodules, or a package manager such as CocoaPods, Carthage or Swift Package Manager, make sure your dependencies have all been resolved before running Tribute (if you are able to successfully build your app you can assume that the dependencies have been resolved).
 
 * Tribute can only detect dependencies that include a LICENSE file (with or without file extensions). If you have copied a dependency without the LICENSE file, or if the dependency doesn't include such a file, it won't be detected. If you encounter such cases please open an issue and I'll try to find a solution.

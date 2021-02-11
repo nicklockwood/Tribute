@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.2.2](https://github.com/nicklockwood/Tribute/releases/tag/0.2.2) (2021-02-11)
+
+- Improved directory scanning performance by 4x (thanks @ejensen!)
+
 ## [0.2.1](https://github.com/nicklockwood/Tribute/releases/tag/0.2.1) (2021-02-05)
 
 - Set 10.13 as the minimum macOS requirement in Package.swift
