@@ -22,6 +22,7 @@ enum Argument: String, CaseIterable {
     case exclude
     case template
     case format
+    case cache
 }
 
 enum Command: String, CaseIterable {
@@ -200,7 +201,9 @@ class Tribute {
         return namedArgs
     }
 
-    func fetchLibraries(in directory: URL, excluding: [Glob],
+    func fetchLibraries(in directory: URL,
+                        excluding: [Glob],
+                        cache: URL? = nil,
                         includingPackages: Bool = true) throws -> [Library]
     {
         let standardizedDirectory = directory.standardized
@@ -224,7 +227,7 @@ class Tribute {
             let licensePath = licenceFile.path.dropFirst(directoryPath.count)
             if includingPackages {
                 if licenceFile.lastPathComponent == "Package.resolved" {
-                    libraries += try fetchLibraries(forResolvedPackageAt: licenceFile)
+                    libraries += try fetchLibraries(forResolvedPackageAt: licenceFile, cache: cache)
                     continue
                 }
                 if licenceFile.lastPathComponent == "Package.swift",
@@ -277,7 +280,7 @@ class Tribute {
         return libraries.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
-    func fetchLibraries(forResolvedPackageAt url: URL) throws -> [Library] {
+    func fetchLibraries(forResolvedPackageAt url: URL, cache: URL? = nil) throws -> [Library] {
         struct Pin: Decodable {
             let package: String
             let repositoryURL: URL
@@ -301,14 +304,18 @@ class Tribute {
         } catch {
             throw TributeError("Unable to read Swift Package file at \(url.path).")
         }
-        guard let derivedDataDirectory = FileManager.default
+        let directory: URL
+        if let cache = cache {
+            directory = cache
+        } else if let derivedDataDirectory = FileManager.default
             .urls(for: .libraryDirectory, in: .userDomainMask).first?
-            .appendingPathComponent("Developer/Xcode/DerivedData")
-        else {
+                    .appendingPathComponent("Developer/Xcode/DerivedData") {
+            directory = derivedDataDirectory
+        } else {
             throw TributeError("Unable to locate ~/Library/Developer/Xcode/DerivedData directory.")
         }
         let libraries = try fetchLibraries(
-            in: derivedDataDirectory,
+            in: directory,
             excluding: [],
             includingPackages: false
         )
@@ -370,6 +377,9 @@ class Tribute {
 
                --format     How the output should be formatted (json, xml or text). If omitted
                             this will be inferred automatically from the template contents.
+
+               --cache      A string pointing to the path spm cached the libraries. If omitted
+                            the standard derived data path will be used instead.
             """
         case .check:
             detailedHelp = """
@@ -396,11 +406,18 @@ class Tribute {
     func listLibraries(in directory: String, with args: [String]) throws -> String {
         let arguments = try preprocessArguments(args)
         let globs = (arguments[.exclude] ?? []).map { expandGlob($0, in: directory) }
+        let cache = arguments[.cache]?.first
 
         // Directory
         let path = "."
         let directoryURL = expandPath(path, in: directory)
-        let libraries = try fetchLibraries(in: directoryURL, excluding: globs)
+        let cacheDirectory: URL?
+        if let cache = cache {
+            cacheDirectory = expandPath(cache, in: directory)
+        } else {
+            cacheDirectory = nil
+        }
+        let libraries = try fetchLibraries(in: directoryURL, excluding: globs, cache: cacheDirectory)
 
         // Output
         let nameWidth = libraries.map { $0.name.count }.max() ?? 0
@@ -460,6 +477,7 @@ class Tribute {
         let skip = (arguments[.skip] ?? []).map { $0.lowercased() }
         let globs = (arguments[.exclude] ?? []).map { expandGlob($0, in: directory) }
         let rawFormat = arguments[.format]?.first
+        let cache = arguments[.cache]?.first
 
         // File
         let anon = arguments[.anonymous] ?? []
@@ -500,7 +518,13 @@ class Tribute {
         // Directory
         let path = "."
         let directoryURL = expandPath(path, in: directory)
-        var libraries = try fetchLibraries(in: directoryURL, excluding: globs)
+        let cacheDirectory: URL?
+        if let cache = cache {
+            cacheDirectory = expandPath(cache, in: directory)
+        } else {
+            cacheDirectory = nil
+        }
+        var libraries = try fetchLibraries(in: directoryURL, excluding: globs, cache: cacheDirectory)
         let libraryNames = libraries.map { $0.name.lowercased() }
 
         if let name = (allow + skip).first(where: { !libraryNames.contains($0) }) {
