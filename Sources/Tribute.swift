@@ -445,7 +445,7 @@ class Tribute {
 
     func listLibraries(in directory: String, with args: [String]) throws -> String {
         let arguments = try preprocessArguments(args)
-        let globs = (arguments[.exclude] ?? []).map { expandGlob($0, in: directory) }
+        let globs = (arguments[.exclude] ?? []).flatMap { expandGlobs($0, in: directory) }
         let spmCache = arguments[.spmcache]?.first
 
         // Directories
@@ -467,7 +467,7 @@ class Tribute {
     func check(in directory: String, with args: [String]) throws -> String {
         let arguments = try preprocessArguments(args)
         let skip = (arguments[.skip] ?? []).map { $0.lowercased() }
-        let globs = (arguments[.exclude] ?? []).map { expandGlob($0, in: directory) }
+        let globs = (arguments[.exclude] ?? []).flatMap { expandGlobs($0, in: directory) }
         let spmCache = arguments[.spmcache]?.first
 
         // Directory
@@ -512,7 +512,7 @@ class Tribute {
         let arguments = try preprocessArguments(args)
         let allow = (arguments[.allow] ?? []).map { $0.lowercased() }
         let skip = (arguments[.skip] ?? []).map { $0.lowercased() }
-        let globs = (arguments[.exclude] ?? []).map { expandGlob($0, in: directory) }
+        let globs = (arguments[.exclude] ?? []).flatMap { expandGlobs($0, in: directory) }
         let rawFormat = arguments[.format]?.first
         let cache = arguments[.spmcache]?.first
 

@@ -24,14 +24,18 @@ func pathContainsGlobSyntax(_ path: String) -> Bool {
 /// Glob type represents either an exact path or wildcard
 enum Glob: CustomStringConvertible {
     case path(String)
-    case regex(NSRegularExpression)
+    case regex(String, NSRegularExpression)
 
     func matches(_ path: String) -> Bool {
         switch self {
         case let .path(_path):
-            return path.hasPrefix(_path)
-        case let .regex(regex):
-            let range = NSRange(location: 0, length: path.utf16.count)
+            return _path == path
+        case let .regex(prefix, regex):
+            guard path.hasPrefix(prefix) else {
+                return false
+            }
+            let count = prefix.utf16.count
+            let range = NSRange(location: count, length: path.utf16.count - count)
             return regex.firstMatch(in: path, options: [], range: range) != nil
         }
     }
@@ -40,7 +44,7 @@ enum Glob: CustomStringConvertible {
         switch self {
         case let .path(path):
             return path
-        case let .regex(regex):
+        case let .regex(prefix, regex):
             var result = regex.pattern.dropFirst().dropLast()
                 .replacingOccurrences(of: "([^/]+)?", with: "*")
                 .replacingOccurrences(of: "(.+/)?", with: "**/")
@@ -51,15 +55,15 @@ enum Glob: CustomStringConvertible {
                 let options = result[range].dropFirst().dropLast().components(separatedBy: "|")
                 result.replaceSubrange(range, with: "{\(options.joined(separator: ","))}")
             }
-            return result
+            return prefix + result
         }
     }
 }
 
 /// Expand one or more comma-delimited file paths using glob syntax
-func expandGlob(_ path: String, in directory: String) -> Glob {
+func expandGlobs(_ path: String, in directory: String) -> [Glob] {
     guard pathContainsGlobSyntax(path) else {
-        return .path(expandPath(path, in: directory).path)
+        return [.path(expandPath(path, in: directory).path)]
     }
     var path = path
     var tokens = [String: String]()
@@ -71,31 +75,37 @@ func expandGlob(_ path: String, in directory: String) -> Glob {
         tokens[token] = "(\(options.joined(separator: "|")))"
         path.replaceSubrange(range, with: token)
     }
-    do {
-        let path = expandPath(path, in: directory).path
-        if FileManager.default.fileExists(atPath: path) {
-            // TODO: should we also handle cases where path includes tokens?
-            return .path(path)
-        }
-        var regex = "^\(path)$"
-            .replacingOccurrences(of: "[.+(){\\\\|]", with: "\\\\$0", options: .regularExpression)
-            .replacingOccurrences(of: "?", with: "[^/]")
-            .replacingOccurrences(of: "**/", with: "(.+/)?")
-            .replacingOccurrences(of: "**", with: ".+")
-            .replacingOccurrences(of: "*", with: "([^/]+)?")
-        for (token, replacement) in tokens {
-            regex = regex.replacingOccurrences(of: token, with: replacement)
-        }
-        return try! .regex(NSRegularExpression(pattern: regex, options: []))
+    path = expandPath(path, in: directory).path
+    if FileManager.default.fileExists(atPath: path) {
+        // TODO: should we also handle cases where path includes tokens?
+        return [.path(path)]
     }
+    var prefix = "", regex = ""
+    let parts = path.components(separatedBy: "/")
+    for (i, part) in parts.enumerated() {
+        if pathContainsGlobSyntax(part) || part.contains("<<<") {
+            regex = parts[i...].joined(separator: "/")
+            break
+        }
+        prefix += "\(part)/"
+    }
+    regex = "^\(regex)$"
+        .replacingOccurrences(of: "[.+(){\\\\|]", with: "\\\\$0", options: .regularExpression)
+        .replacingOccurrences(of: "?", with: "[^/]")
+        .replacingOccurrences(of: "**/", with: "(.+/)?")
+        .replacingOccurrences(of: "**", with: ".+")
+        .replacingOccurrences(of: "*", with: "([^/]+)?")
+    for (token, replacement) in tokens {
+        regex = regex.replacingOccurrences(of: token, with: replacement)
+    }
+    return [.regex(prefix, try! NSRegularExpression(pattern: regex, options: []))]
 }
 
-// NOTE: currently only used for testing
-func matchGlobs(_ globs: [Glob], in directory: String) -> [URL] {
+func matchGlobs(_ globs: [Glob], in directory: String) throws -> [URL] {
     var urls = [URL]()
     let keys: [URLResourceKey] = [.isDirectoryKey]
     let manager = FileManager.default
-    func enumerate(_ directory: URL) {
+    func enumerate(_ directory: URL, with glob: Glob) {
         guard let files = try? manager.contentsOfDirectory(
             at: directory, includingPropertiesForKeys: keys, options: []
         ) else {
@@ -104,15 +114,34 @@ func matchGlobs(_ globs: [Glob], in directory: String) -> [URL] {
         for url in files {
             let path = url.path
             var isDirectory: ObjCBool = false
-            if globs.contains(where: { $0.matches(path) }) {
+            if glob.matches(path) {
                 urls.append(url)
             } else if manager.fileExists(atPath: path, isDirectory: &isDirectory),
                       isDirectory.boolValue
             {
-                enumerate(url)
+                enumerate(url, with: glob)
             }
         }
     }
-    enumerate(URL(fileURLWithPath: directory))
+    for glob in globs {
+        switch glob {
+        case let .path(path):
+            if manager.fileExists(atPath: path) {
+                urls.append(URL(fileURLWithPath: path))
+            } else {
+                throw TributeError("File not found at \(glob)")
+            }
+        case let .regex(path, _):
+            let count = urls.count
+            if directory.hasPrefix(path) {
+                enumerate(URL(fileURLWithPath: directory).standardized, with: glob)
+            } else if path.hasPrefix(directory) {
+                enumerate(URL(fileURLWithPath: path).standardized, with: glob)
+            }
+            if count == urls.count {
+                throw TributeError("Glob did not match any files at \(glob)")
+            }
+        }
+    }
     return urls
 }
