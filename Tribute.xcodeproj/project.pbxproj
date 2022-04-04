@@ -40,6 +40,7 @@
 		016C8F382576431D00692CEE /* TemplateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateTests.swift; sourceTree = "<group>"; };
 		016C8F3A2576431D00692CEE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		016C8F40257645B700692CEE /* GlobsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobsTests.swift; sourceTree = "<group>"; };
+		0180747F27FB647A0038589F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,6 +88,7 @@
 				016C8F2F2575B65600692CEE /* Template.swift */,
 				016C8F2B2575AB9A00692CEE /* Tribute.swift */,
 				016C8F0E257583CE00692CEE /* main.swift */,
+				0180747F27FB647A0038589F /* Info.plist */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -355,6 +357,9 @@
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = 8VQKF583ED;
 				ENABLE_HARDENED_RUNTIME = NO;
+				INFOPLIST_FILE = "$(SRCROOT)/Sources/Info.plist";
+				MARKETING_VERSION = 0.3.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.charcoaldesign.Tribute;
 				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PRODUCT_NAME = tribute;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -369,6 +374,9 @@
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = 8VQKF583ED;
 				ENABLE_HARDENED_RUNTIME = NO;
+				INFOPLIST_FILE = "$(SRCROOT)/Sources/Info.plist";
+				MARKETING_VERSION = 0.3.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.charcoaldesign.Tribute;
 				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PRODUCT_NAME = tribute;
 				PROVISIONING_PROFILE_SPECIFIER = "";

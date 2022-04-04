@@ -1,0 +1,23 @@
+name: build
+
+on:
+  push:
+  pull_request:
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Build and Test
+        run: |
+          xcodebuild -scheme "Tribute" -sdk macosx clean build test -enableCodeCoverage YES -derivedDataPath Build/
+          cd Build/Build/ProfileData
+          cd $(ls -d */|head -n 1)
+          directory=${PWD##*/}
+          pathCoverage=Build/Build/ProfileData/${directory}/Coverage.profdata
+          cd ../../../../
+          xcrun llvm-cov export -format="lcov" -instr-profile $pathCoverage Build/Build/Products/Debug/tribute > info.lcov
+          bash <(curl https://codecov.io/bash) -t f6548cb5-a884-4db9-a759-6ab786662461
+        env:
+          DEVELOPER_DIR: /Applications/Xcode_11.7.app/Contents/Developer

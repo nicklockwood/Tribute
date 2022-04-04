@@ -1,4 +1,4 @@
-[![Travis](https://api.travis-ci.org/nicklockwood/Tribute.svg?branch=master)](https://travis-ci.org/nicklockwood/Tribute)
+[![Build](https://github.com/nicklockwood/Tribute/actions/workflows/build.yml/badge.svg)](https://github.com/nicklockwood/Tribute/actions/workflows/build.yml)
 [![Swift 5.1](https://img.shields.io/badge/swift-5.1-red.svg?style=flat)](https://developer.apple.com/swift)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://opensource.org/licenses/MIT)
 [![Twitter](https://img.shields.io/badge/twitter-@nicklockwood-blue.svg)](http://twitter.com/nicklockwood)
@@ -16,7 +16,7 @@ Tribute is a command-line tool to simplify the process of generating, checking a
 Installation
 ------------
 
-You can install the tool on macOS either by building it yourself from source, or by using [Mint](https://github.com/yonaskolb/Mint) as follows:
+You can install the tool on macOS either by building it yourself from source, downloading the prebuilt binary from the [releases page](https://github.com/nicklockwood/Tribute/releases), or by using [Mint](https://github.com/yonaskolb/Mint) as follows:
 
 ```bash
 $ mint install nicklockwood/Tribute

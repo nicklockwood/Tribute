@@ -3,6 +3,7 @@
 
 # Xcode
 build/
+Build/
 html/
 .build
 .swiftpm

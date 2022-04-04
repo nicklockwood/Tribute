@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.3.1](https://github.com/nicklockwood/Tribute/releases/tag/0.3.1) (2022-04-04)
+
+- Added support for SPM Package.resolved version 2 format (thanks @gewill!)
+- Improved globs file matching logic
+
 ## [0.3.0](https://github.com/nicklockwood/Tribute/releases/tag/0.3.0) (2021-02-20)
 
 - Added `spmcache` parameter to support custom SPM cache locations (thanks @dottore!)
