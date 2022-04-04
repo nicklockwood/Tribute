@@ -282,23 +282,20 @@ class Tribute {
 
     func fetchLibraries(forResolvedPackageAt url: URL, spmCache: URL?) throws -> [Library] {
         struct Pin: Decodable {
-            let package: String
-            let repositoryURL: URL
-        }
-        struct Object: Decodable {
-            let pins: [Pin]
+            let identity: String
+            let location: URL
         }
         struct Resolved: Decodable {
-            let object: Object
+            let pins: [Pin]
         }
         let filter: Set<String>
         do {
             let data = try Data(contentsOf: url)
             let resolved = try JSONDecoder().decode(Resolved.self, from: data)
-            filter = Set(resolved.object.pins.flatMap {
+            filter = Set(resolved.pins.flatMap {
                 [
-                    $0.package.lowercased(),
-                    $0.repositoryURL.deletingPathExtension().lastPathComponent.lowercased(),
+                    $0.identity.lowercased(),
+                    $0.location.deletingPathExtension().lastPathComponent.lowercased(),
                 ]
             })
         } catch {
