@@ -201,11 +201,12 @@ class Tribute {
         return namedArgs
     }
 
-    func fetchLibraries(in directory: URL,
-                        excluding: [Glob],
-                        spmCache: URL?,
-                        includingPackages: Bool = true) throws -> [Library]
-    {
+    func fetchLibraries(
+        in directory: URL,
+        excluding: [Glob],
+        spmCache: URL?,
+        includingPackages: Bool = true
+    ) throws -> [Library] {
         let standardizedDirectory = directory.standardized
         let directoryPath = standardizedDirectory.path
 
@@ -281,23 +282,63 @@ class Tribute {
     }
 
     func fetchLibraries(forResolvedPackageAt url: URL, spmCache: URL?) throws -> [Library] {
-        struct Pin: Decodable {
-            let identity: String
-            let location: URL
-        }
         struct Resolved: Decodable {
-            let pins: [Pin]
+            var version: Double
         }
+
+        struct ResolvedV1: Decodable {
+            struct Pin: Decodable {
+                let package: String
+                let repositoryURL: URL
+            }
+
+            struct Object: Decodable {
+                let pins: [Pin]
+            }
+
+            let object: Object
+
+            var filter: Set<String> {
+                Set(object.pins.flatMap {
+                    [
+                        $0.package.lowercased(),
+                        $0.repositoryURL.deletingPathExtension().lastPathComponent.lowercased(),
+                    ]
+                })
+            }
+        }
+
+        struct ResolvedV2: Decodable {
+            struct Pin: Decodable {
+                let identity: String
+                let location: URL
+            }
+
+            let pins: [Pin]
+
+            var filter: Set<String> {
+                Set(pins.flatMap {
+                    [
+                        $0.identity.lowercased(),
+                        $0.location.deletingPathExtension().lastPathComponent.lowercased(),
+                    ]
+                })
+            }
+        }
+
         let filter: Set<String>
         do {
             let data = try Data(contentsOf: url)
-            let resolved = try JSONDecoder().decode(Resolved.self, from: data)
-            filter = Set(resolved.pins.flatMap {
-                [
-                    $0.identity.lowercased(),
-                    $0.location.deletingPathExtension().lastPathComponent.lowercased(),
-                ]
-            })
+            let decoder = JSONDecoder()
+            let version = try decoder.decode(Resolved.self, from: data).version
+            switch version {
+            case 1:
+                filter = try decoder.decode(ResolvedV1.self, from: data).filter
+            case 2:
+                filter = try decoder.decode(ResolvedV2.self, from: data).filter
+            default:
+                throw TributeError("Unsupported Swift Package.resolved version: \(version).")
+            }
         } catch {
             throw TributeError("Unable to read Swift Package file at \(url.path).")
         }
