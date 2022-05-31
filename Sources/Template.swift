@@ -47,26 +47,25 @@ struct Template: RawRepresentable {
         case .xml:
             return Template(rawValue: """
             <licenses>
-                $start
-                <license>
+                $start<license>
                     <name>$name</name>
                     <version>$version</version>
                     <type>$type</type>
                     <text>$text</text>
-                </license>
+                </license>$separator
                 $end
             </licenses>
             """)
         case .json:
             return Template(rawValue: """
             [
-                $start
-                {
+                $start{
                     "name": "$name",
                     "version": "$version",
                     "type": "$type",
                     "text": "$text"
-                }$separator,$end
+                }$separator,
+                $end
             ]
             """)
         }
