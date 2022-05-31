@@ -440,8 +440,8 @@ class Tribute {
                             $end         The end of the license template (before the footer)
                             $separator   A delimiter to be included between each license
 
-               --format     How the output should be formatted (JSON, XML or text). If omitted
-                            this will be inferred automatically from the template contents.
+               --format     How the output should be formatted (JSON, XML, plist or text). If
+                            omitted this will be inferred from the template or output filepath.
 
                --spmcache   Path to the Swift Package Manager cache (where SPM stores downloaded
                             libraries). If omitted the standard derived data path will be used.

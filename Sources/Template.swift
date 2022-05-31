@@ -11,12 +11,13 @@ enum Format: String, CaseIterable {
     case text
     case xml
     case json
+    case plist
 
     static func infer(from template: Template) -> Format {
         let text = template.rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
         if let first = text.first {
-            if first == "<" || text.contains("</") {
-                return .xml
+            if first == "<" {
+                return text.contains("<plist") ? .plist : .xml
             }
             if ["{", "[", "\""].contains(first) {
                 return .json
@@ -31,6 +32,8 @@ enum Format: String, CaseIterable {
             return .xml
         case "json":
             return .json
+        case "plist":
+            return .plist
         default:
             return .text
         }
@@ -55,6 +58,27 @@ struct Template: RawRepresentable {
                 </license>$separator
                 $end
             </licenses>
+            """)
+        case .plist:
+            return Template(rawValue: """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+                "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+            <plist version="1.0">
+            <array>
+                $start<dict>
+                    <key>name</key>
+                    <string>$name</string>
+                    <key>version</key>
+                    <string>$version</string>
+                    <key>type</key>
+                    <string>$type</string>
+                    <key>text</key>
+                    <string>$text</string>
+                </dict>$separator
+                $end
+            </array>
+            </plist>
             """)
         case .json:
             return Template(rawValue: """
@@ -140,7 +164,7 @@ struct Template: RawRepresentable {
             }
             let data = (try? jsonEncoder.encode(text)) ?? Data()
             return "\(String(data: data, encoding: .utf8)?.dropFirst().dropLast() ?? "")"
-        case .xml:
+        case .xml, .plist:
             let plistEncoder = PropertyListEncoder()
             plistEncoder.outputFormat = .xml
             let data = (try? plistEncoder.encode([text])) ?? Data()
