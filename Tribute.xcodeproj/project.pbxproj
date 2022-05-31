@@ -16,6 +16,7 @@
 		016C8F46257645DF00692CEE /* Globs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 016C8F282575AB8600692CEE /* Globs.swift */; };
 		016C8F4D257649CA00692CEE /* Template.swift in Sources */ = {isa = PBXBuildFile; fileRef = 016C8F2F2575B65600692CEE /* Template.swift */; };
 		016C8F50257649E000692CEE /* Tribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 016C8F2B2575AB9A00692CEE /* Tribute.swift */; };
+		01C6F9A828467CEB000B57B1 /* MetadataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01C6F9A628467C2C000B57B1 /* MetadataTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -41,6 +42,7 @@
 		016C8F3A2576431D00692CEE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		016C8F40257645B700692CEE /* GlobsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobsTests.swift; sourceTree = "<group>"; };
 		0180747F27FB647A0038589F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		01C6F9A628467C2C000B57B1 /* MetadataTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MetadataTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,6 +100,7 @@
 			children = (
 				016C8F40257645B700692CEE /* GlobsTests.swift */,
 				016C8F382576431D00692CEE /* TemplateTests.swift */,
+				01C6F9A628467C2C000B57B1 /* MetadataTests.swift */,
 				016C8F3A2576431D00692CEE /* Info.plist */,
 			);
 			path = Tests;
@@ -226,6 +229,7 @@
 			files = (
 				016C8F50257649E000692CEE /* Tribute.swift in Sources */,
 				016C8F392576431D00692CEE /* TemplateTests.swift in Sources */,
+				01C6F9A828467CEB000B57B1 /* MetadataTests.swift in Sources */,
 				016C8F4D257649CA00692CEE /* Template.swift in Sources */,
 				016C8F41257645B700692CEE /* GlobsTests.swift in Sources */,
 				016C8F46257645DF00692CEE /* Globs.swift in Sources */,
