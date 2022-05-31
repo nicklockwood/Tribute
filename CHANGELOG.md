@@ -1,5 +1,13 @@
 # Change Log
 
+## [0.4.0](https://github.com/nicklockwood/Tribute/releases/tag/0.4.0) (2022-06-01)
+
+- Added version info for libraries (when using SPM)
+- Removed extraneous whitespace from JSON and XML export
+- Added version info for SPM packages
+- Added Plist export option
+- Added Linux support
+
 ## [0.3.1](https://github.com/nicklockwood/Tribute/releases/tag/0.3.1) (2022-04-04)
 
 - Added support for SPM Package.resolved version 2 format (thanks @gewill!)

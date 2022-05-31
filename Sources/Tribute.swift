@@ -60,7 +60,7 @@ enum LicenseType: String, CaseIterable {
             ]
         case .mit:
             return [
-                "The MIT License",
+                "MIT License",
                 "Permission is hereby granted, free of charge, to any person",
                 "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR",
             ]
@@ -651,7 +651,7 @@ class Tribute {
         case .check:
             return try check(in: directory, with: args)
         case .version:
-            return "0.3.1"
+            return "0.4.0"
         }
     }
 }

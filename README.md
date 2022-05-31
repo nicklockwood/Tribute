@@ -16,12 +16,11 @@ Tribute is a command-line tool to simplify the process of generating, checking a
 Installation
 ------------
 
-You can install the tool on macOS either by building it yourself from source, downloading the prebuilt binary from the [releases page](https://github.com/nicklockwood/Tribute/releases), or by using [Mint](https://github.com/yonaskolb/Mint) as follows:
+You can install the tool on macOS or Linux by building it yourself from source, downloading the prebuilt binaries from the [releases page](https://github.com/nicklockwood/Tribute/releases), or by using [Mint](https://github.com/yonaskolb/Mint).
 
 ```bash
-$ mint install nicklockwood/Tribute
+$ mint install nicklockwood/tribute
 ```
-
 
 Usage
 ------
@@ -87,3 +86,5 @@ Known issues
 * Dependency scanning only works if the dependencies have been checked out. If you are using git submodules, or a package manager such as CocoaPods, Carthage or Swift Package Manager, make sure your dependencies have all been resolved before running Tribute (if you are able to successfully build your app you can assume that the dependencies have been resolved).
 
 * Tribute can only detect dependencies that include a LICENSE file (with or without file extensions). If you have copied a dependency without the LICENSE file, or if the dependency doesn't include such a file, it won't be detected. If you encounter such cases please open an issue and I'll try to find a solution.
+
+* Version detection only works for libraries included via Swift Package manager.
