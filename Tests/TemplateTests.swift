@@ -108,11 +108,13 @@ class TemplateTests: XCTestCase {
         let template = Template(rawValue: """
         {
             "name": $name,
+            "version": $version,
             "text": $text
         }
         """)
         let library = Library(
             name: "Foobar 3.0",
+            version: "1.0.1",
             licensePath: "",
             licenseType: .mit,
             licenseText: """
@@ -123,6 +125,7 @@ class TemplateTests: XCTestCase {
         XCTAssertEqual(try template.render([library], as: .json), """
         {
             "name": "Foobar 3.0",
+            "version": "1.0.1",
             "text": "line 1\\nline 2"
         }
         """)

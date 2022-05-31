@@ -43,13 +43,14 @@ struct Template: RawRepresentable {
     static func `default`(for format: Format) -> Template {
         switch format {
         case .text:
-            return Template(rawValue: "$name\n\n$text\n\n")
+            return Template(rawValue: "$name ($version)\n\n$text\n\n")
         case .xml:
             return Template(rawValue: """
             <licenses>
                 $start
                 <license>
                     <name>$name</name>
+                    <version>$version</version>
                     <type>$type</type>
                     <text>$text</text>
                 </license>
@@ -61,9 +62,10 @@ struct Template: RawRepresentable {
             [
                 $start
                 {
-                    "name": $name,
-                    "type": $type,
-                    "text": $text
+                    "name": "$name",
+                    "version": "$version",
+                    "type": "$type",
+                    "text": "$text"
                 }$separator,$end
             ]
             """)
@@ -97,12 +99,29 @@ struct Template: RawRepresentable {
 
         let body = libraries.map { library -> String in
             let licenseType = library.licenseType?.rawValue ?? "Unknown"
+            let version = library.version ?? "Unknown"
             return section
                 .replacingOccurrences(
                     of: "\"$name\"", with: escape(library.name, as: format, inQuotes: true)
                 )
                 .replacingOccurrences(
                     of: "$name", with: escape(library.name, as: format, inQuotes: false)
+                )
+                .replacingOccurrences(
+                    of: " ($version)", with: library.version.map {
+                        " (\(escape($0, as: format, inQuotes: false)))"
+                    } ?? ""
+                )
+                .replacingOccurrences(
+                    of: "($version)", with: library.version.map {
+                        "(\(escape($0, as: format, inQuotes: false)))"
+                    } ?? ""
+                )
+                .replacingOccurrences(
+                    of: "\"$version\"", with: escape(version, as: format, inQuotes: true)
+                )
+                .replacingOccurrences(
+                    of: "$version", with: escape(version, as: format, inQuotes: false)
                 )
                 .replacingOccurrences(
                     of: "\"$type\"", with: escape(licenseType, as: format, inQuotes: true)

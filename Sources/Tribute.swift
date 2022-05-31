@@ -108,9 +108,16 @@ enum LicenseType: String, CaseIterable {
 
 struct Library {
     var name: String
+    var version: String?
     var licensePath: String
     var licenseType: LicenseType?
     var licenseText: String
+
+    func with(_ fn: (inout Library) -> Void) -> Library {
+        var copy = self
+        fn(&copy)
+        return copy
+    }
 }
 
 private extension String {
@@ -268,6 +275,7 @@ class Tribute {
                     .trimmingCharacters(in: .whitespacesAndNewlines)
                 let library = Library(
                     name: name,
+                    version: nil,
                     licensePath: String(licensePath),
                     licenseType: LicenseType(licenseText: licenseText),
                     licenseText: licenseText
@@ -286,10 +294,16 @@ class Tribute {
             var version: Double
         }
 
+        struct State: Decodable {
+            let revision: String?
+            let version: String?
+        }
+
         struct ResolvedV1: Decodable {
             struct Pin: Decodable {
                 let package: String
                 let repositoryURL: URL
+                let state: State?
             }
 
             struct Object: Decodable {
@@ -297,45 +311,49 @@ class Tribute {
             }
 
             let object: Object
-
-            var filter: Set<String> {
-                Set(object.pins.flatMap {
-                    [
-                        $0.package.lowercased(),
-                        $0.repositoryURL.deletingPathExtension().lastPathComponent.lowercased(),
-                    ]
-                })
-            }
         }
 
         struct ResolvedV2: Decodable {
             struct Pin: Decodable {
                 let identity: String
                 let location: URL
+                let state: State?
             }
 
             let pins: [Pin]
 
-            var filter: Set<String> {
-                Set(pins.flatMap {
-                    [
-                        $0.identity.lowercased(),
-                        $0.location.deletingPathExtension().lastPathComponent.lowercased(),
-                    ]
+            init(_ v1: ResolvedV1) {
+                self.pins = v1.object.pins.map {
+                    Pin(
+                        identity: $0.package,
+                        location: $0.repositoryURL,
+                        state: $0.state
+                    )
+                }
+            }
+
+            func pin(for name: String) -> Pin? {
+                pins.first(where: {
+                    name.caseInsensitiveCompare($0.identity) == .orderedSame ||
+                        name.caseInsensitiveCompare(
+                            $0.location
+                                .deletingPathExtension()
+                                .lastPathComponent
+                        ) == .orderedSame
                 })
             }
         }
 
-        let filter: Set<String>
+        let resolved: ResolvedV2
         do {
             let data = try Data(contentsOf: url)
             let decoder = JSONDecoder()
             let version = try decoder.decode(Resolved.self, from: data).version
             switch version {
             case 1:
-                filter = try decoder.decode(ResolvedV1.self, from: data).filter
+                resolved = try ResolvedV2(decoder.decode(ResolvedV1.self, from: data))
             case 2:
-                filter = try decoder.decode(ResolvedV2.self, from: data).filter
+                resolved = try decoder.decode(ResolvedV2.self, from: data)
             default:
                 throw TributeError("Unsupported Swift Package.resolved version: \(version).")
             }
@@ -359,7 +377,12 @@ class Tribute {
             spmCache: nil,
             includingPackages: false
         )
-        return libraries.filter { filter.contains($0.name.lowercased()) }
+        return libraries.compactMap {
+            guard let pin = resolved.pin(for: $0.name) else {
+                return nil
+            }
+            return $0.with { $0.version = pin.state?.version }
+        }
     }
 
     func getHelp(with arg: String?) throws -> String {
@@ -409,7 +432,9 @@ class Tribute {
                             following placeholder strings:
 
                             $name        The name of the library
-                            $type        The license type (e.g. MIT, Apache, BSD)
+                            $version     The installed version of the library or "Unknown"
+                            ($version)   Version in parentheses - will be omitted if unknown
+                            $type        The license type (e.g. MIT, Apache, BSD) or "Unknown"
                             $text        The text of the license itself
                             $start       The start of the license template (after the header)
                             $end         The end of the license template (before the footer)
@@ -455,11 +480,17 @@ class Tribute {
         let libraries = try fetchLibraries(in: directoryURL, excluding: globs, spmCache: cacheURL)
 
         // Output
-        let nameWidth = libraries.map { $0.name.count }.max() ?? 0
+        let nameWidth = libraries.map {
+            $0.name.count + ($0.version.map { $0.count + 3 } ?? 0)
+        }.max() ?? 0
+        let licenceWidth = libraries.map {
+            ($0.licenseType?.rawValue ?? "Unknown").count
+        }.max() ?? 0
         return libraries.map {
-            let name = $0.name + String(repeating: " ", count: nameWidth - $0.name.count)
+            var name = $0.name + ($0.version.map { " (\($0))" } ?? "")
+            name += String(repeating: " ", count: nameWidth - name.count)
             var type = ($0.licenseType?.rawValue ?? "Unknown")
-            type += String(repeating: " ", count: 7 - type.count)
+            type += String(repeating: " ", count: licenceWidth - type.count)
             return "\(name)  \(type)  \($0.licensePath)"
         }.joined(separator: "\n")
     }
