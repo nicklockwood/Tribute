@@ -107,13 +107,13 @@ class TemplateTests: XCTestCase {
     func testJSON() throws {
         let template = Template(rawValue: """
         {
-            "name": $name,
-            "version": $version,
-            "text": $text
+            "name": "$name",
+            "version": "$version",
+            "text": "$text"
         }
         """)
         let library = Library(
-            name: "Foobar 3.0",
+            name: "Foobar",
             version: "1.0.1",
             licensePath: "",
             licenseType: .mit,
@@ -124,25 +124,10 @@ class TemplateTests: XCTestCase {
         )
         XCTAssertEqual(try template.render([library], as: .json), """
         {
-            "name": "Foobar 3.0",
+            "name": "Foobar",
             "version": "1.0.1",
             "text": "line 1\\nline 2"
         }
-        """)
-    }
-
-    func testQuotedJSON() throws {
-        let template = Template(rawValue: """
-        "$name"
-        """)
-        let library = Library(
-            name: "Foobar 3.0",
-            licensePath: "",
-            licenseType: .mit,
-            licenseText: ""
-        )
-        XCTAssertEqual(try template.render([library], as: .json), """
-        "Foobar 3.0"
         """)
     }
 

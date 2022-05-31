@@ -102,48 +102,36 @@ struct Template: RawRepresentable {
             let version = library.version ?? "Unknown"
             return section
                 .replacingOccurrences(
-                    of: "\"$name\"", with: escape(library.name, as: format, inQuotes: true)
-                )
-                .replacingOccurrences(
-                    of: "$name", with: escape(library.name, as: format, inQuotes: false)
+                    of: "$name", with: escape(library.name, as: format)
                 )
                 .replacingOccurrences(
                     of: " ($version)", with: library.version.map {
-                        " (\(escape($0, as: format, inQuotes: false)))"
+                        " (\(escape($0, as: format)))"
                     } ?? ""
                 )
                 .replacingOccurrences(
                     of: "($version)", with: library.version.map {
-                        "(\(escape($0, as: format, inQuotes: false)))"
+                        "(\(escape($0, as: format)))"
                     } ?? ""
                 )
                 .replacingOccurrences(
-                    of: "\"$version\"", with: escape(version, as: format, inQuotes: true)
+                    of: "$version", with: escape(version, as: format)
                 )
                 .replacingOccurrences(
-                    of: "$version", with: escape(version, as: format, inQuotes: false)
+                    of: "$type", with: escape(licenseType, as: format)
                 )
                 .replacingOccurrences(
-                    of: "\"$type\"", with: escape(licenseType, as: format, inQuotes: true)
-                )
-                .replacingOccurrences(
-                    of: "$type", with: escape(licenseType, as: format, inQuotes: false)
-                )
-                .replacingOccurrences(
-                    of: "\"$text\"", with: escape(library.licenseText, as: format, inQuotes: true)
-                )
-                .replacingOccurrences(
-                    of: "$text", with: escape(library.licenseText, as: format, inQuotes: false)
+                    of: "$text", with: escape(library.licenseText, as: format)
                 )
         }.joined(separator: separator)
 
         return header + body + footer
     }
 
-    func escape(_ text: String, as format: Format, inQuotes: Bool) -> String {
+    func escape(_ text: String, as format: Format) -> String {
         switch format {
         case .text:
-            return inQuotes ? "\"\(text)\"" : text
+            return text
         case .json:
             let jsonEncoder = JSONEncoder()
             if #available(macOS 10.15, *) {
@@ -152,16 +140,15 @@ struct Template: RawRepresentable {
                 jsonEncoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             }
             let data = (try? jsonEncoder.encode(text)) ?? Data()
-            return String(data: data, encoding: .utf8) ?? ""
+            return "\(String(data: data, encoding: .utf8)?.dropFirst().dropLast() ?? "")"
         case .xml:
             let plistEncoder = PropertyListEncoder()
             plistEncoder.outputFormat = .xml
             let data = (try? plistEncoder.encode([text])) ?? Data()
-            var text = String(data: data, encoding: .utf8) ?? ""
+            let text = String(data: data, encoding: .utf8) ?? ""
             let start = text.range(of: "<string>")?.upperBound ?? text.startIndex
             let end = text.range(of: "</string>")?.lowerBound ?? text.endIndex
-            text = String(text[start ..< end]).replacingOccurrences(of: "\"", with: "&quot;")
-            return inQuotes ? "\"\(text)\"" : text
+            return String(text[start ..< end]).replacingOccurrences(of: "\"", with: "&quot;")
         }
     }
 }
