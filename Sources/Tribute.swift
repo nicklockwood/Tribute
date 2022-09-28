@@ -109,6 +109,7 @@ enum LicenseType: String, CaseIterable {
 struct Library {
     var name: String
     var version: String?
+    var url: URL?
     var licensePath: String
     var licenseType: LicenseType?
     var licenseText: String
@@ -276,6 +277,7 @@ class Tribute {
                 let library = Library(
                     name: name,
                     version: nil,
+                    url: nil,
                     licensePath: String(licensePath),
                     licenseType: LicenseType(licenseText: licenseText),
                     licenseText: licenseText
@@ -381,7 +383,10 @@ class Tribute {
             guard let pin = resolved.pin(for: $0.name) else {
                 return nil
             }
-            return $0.with { $0.version = pin.state?.version }
+            return $0.with {
+                $0.url = pin.location
+                $0.version = pin.state?.version
+            }
         }
     }
 

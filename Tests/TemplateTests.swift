@@ -109,12 +109,15 @@ class TemplateTests: XCTestCase {
         {
             "name": "$name",
             "version": "$version",
-            "text": "$text"
+            "text": "$text",
+            "path": "$path",
+            "url": "$url"
         }
         """)
         let library = Library(
             name: "Foobar",
             version: "1.0.1",
+            url: .init(string: "https://github.com/example/Foobar")!,
             licensePath: "",
             licenseType: .mit,
             licenseText: """
@@ -126,7 +129,9 @@ class TemplateTests: XCTestCase {
         {
             "name": "Foobar",
             "version": "1.0.1",
-            "text": "line 1\\nline 2"
+            "text": "line 1\\nline 2",
+            "path": "",
+            "url": "https://github.com/example/Foobar"
         }
         """)
     }
@@ -136,10 +141,13 @@ class TemplateTests: XCTestCase {
         <root>
             <name>$name</name>
             <text>$text</text>
+            <path>$path</path>
+            <url>$url</url>
         </root>
         """)
         let library = Library(
             name: "foo & bar - \"the best!\"",
+            url: .init(string: "https://github.com/example/Foobar")!,
             licensePath: "",
             licenseType: .mit,
             licenseText: """
@@ -151,6 +159,8 @@ class TemplateTests: XCTestCase {
         <root>
             <name>foo &amp; bar - &quot;the best!&quot;</name>
             <text>line 1\nline 2</text>
+            <path></path>
+            <url>https://github.com/example/Foobar</url>
         </root>
         """)
     }
