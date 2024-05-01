@@ -352,7 +352,7 @@ class Tribute {
             switch version {
             case 1:
                 resolved = try ResolvedV2(decoder.decode(ResolvedV1.self, from: data))
-            case 2:
+            case 2, 3:
                 resolved = try decoder.decode(ResolvedV2.self, from: data)
             default:
                 throw TributeError("Unsupported Swift Package.resolved version: \(version).")
