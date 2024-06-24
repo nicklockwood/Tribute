@@ -55,6 +55,8 @@ struct Template: RawRepresentable {
                     <version>$version</version>
                     <type>$type</type>
                     <text>$text</text>
+                    <path>$path</path>
+                    <url>$url</url>
                 </license>$separator
                 $end
             </licenses>
@@ -75,6 +77,10 @@ struct Template: RawRepresentable {
                     <string>$type</string>
                     <key>text</key>
                     <string>$text</string>
+                    <key>path</key>
+                    <string>$path</string>
+                    <key>url</key>
+                    <string>$url</string>
                 </dict>$separator
                 $end
             </array>
@@ -87,7 +93,9 @@ struct Template: RawRepresentable {
                     "name": "$name",
                     "version": "$version",
                     "type": "$type",
-                    "text": "$text"
+                    "text": "$text",
+                    "path": "$path",
+                    "url": "$url"
                 }$separator,
                 $end
             ]
@@ -123,6 +131,7 @@ struct Template: RawRepresentable {
         let body = libraries.map { library -> String in
             let licenseType = library.licenseType?.rawValue ?? "Unknown"
             let version = library.version ?? "Unknown"
+            let url = library.url?.absoluteString ?? "Unknown"
             return section
                 .replacingOccurrences(
                     of: "$name", with: escape(library.name, as: format)
@@ -145,6 +154,12 @@ struct Template: RawRepresentable {
                 )
                 .replacingOccurrences(
                     of: "$text", with: escape(library.licenseText, as: format)
+                )
+                .replacingOccurrences(
+                    of: "$path", with: escape(library.licensePath, as: format)
+                )
+                .replacingOccurrences(
+                    of: "$url", with: escape(url, as: format)
                 )
         }.joined(separator: separator)
 
